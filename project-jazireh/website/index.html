@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>فروشگاه جزیره</title>
-  <meta name="description" content="فروشگاه آنلاین جزیره — محصولات باکیفیت با قیمت مناسب و ارسال سریع">
-  <meta property="og:title" content="فروشگاه جزیره">
-  <meta property="og:description" content="محصولات باکیفیت با قیمت مناسب">
+  <title>فروشگاه ساعت جزیره | خرید ساعت مچی با بهترین قیمت</title>
+  <meta name="description" content="فروشگاه تخصصی ساعت مچی — انواع ساعت مردانه و زنانه Seiko با بهترین قیمت و ارسال فوری به سراسر ایران">
+  <meta property="og:title" content="فروشگاه ساعت جزیره">
+  <meta property="og:description" content="ساعت مچی مردانه و زنانه باکیفیت، قیمت مناسب و ارسال سریع">
   <meta property="og:type" content="website">
   <style>
     @import url('https://cdn.jsdelivr.net/gh/Vazir-Font/Vazir@latest/dist/font-face.css');
@@ -500,8 +500,8 @@
 
   <!-- Hero -->
   <section class="hero">
-    <h1>کیفیت رو مستقیم بخر</h1>
-    <p>محصولات باکیفیت با بهترین قیمت بازار • ارسال سریع به سراسر ایران • پشتیبانی ۲۴ ساعته</p>
+    <h1>ساعت مچی باکیفیت، قیمت مناسب</h1>
+    <p>انواع ساعت مچی مردانه و زنانه Seiko • ارسال فوری به سراسر ایران • ۷ روز ضمانت بازگشت</p>
     <div class="hero-cta">
       <a href="#products" class="btn btn-primary">🛍️ مشاهده محصولات</a>
       <a href="https://t.me/YOUR_BOT_USERNAME" target="_blank" class="btn btn-outline">🤖 سفارش با ربات تلگرام</a>
@@ -512,7 +512,7 @@
   <div class="stats">
     <div class="stat-card">
       <div class="icon">📦</div>
-      <h3>محصولات</h3>
+      <h3>مدل ساعت</h3>
       <div class="value" id="totalProducts">0</div>
     </div>
     <div class="stat-card">
@@ -572,20 +572,19 @@
 
   <script>
     // ═══════════════════════════════════════
-    //  محصولات — اینجا محصولاتت رو اضافه کن
+    //  محصولات
     // ═══════════════════════════════════════
     const products = [
-      // {
-      //   id: 'PRD-001',
-      //   name: 'محصول نمونه ۱',
-      //   category: 'دسته‌بندی',
-      //   price: 250000,  // تومان
-      //   image: 'images/product-001.jpg',
-      //   badge: 'special',  // special | new | ''
-      //   badgeText: 'پرفروش',
-      //   stock: 15,
-      //   description: 'توضیح کوتاه محصول برای کارت'
-      // },
+      { id: 'PRD-001', name: 'ساعت مردانه Seiko طلایی — صفحه مشکی بافت‌دار', category: 'ساعت مردانه', price: 2000000, image: 'images/product-001.jpg', badge: 'special', badgeText: 'پرفروش', stock: 15, description: 'بند استیل طلایی، صفحه مشکی بافت لانه‌زنبوری، موتور کوارتز ژاپنی، قطر ۴۰mm' },
+      { id: 'PRD-002', name: 'ساعت مردانه Seiko طلایی — صفحه آبی سان‌برست', category: 'ساعت مردانه', price: 2000000, image: 'images/product-002.jpg', badge: 'new', badgeText: 'جدید', stock: 12, description: 'بند استیل طلایی، صفحه آبی سان‌برست، تاریخ‌شمار، قطر ۴۰mm' },
+      { id: 'PRD-003', name: 'ساعت زنانه Seiko طلایی — صفحه آبی سان‌برست', category: 'ساعت زنانه', price: 2000000, image: 'images/product-003.jpg', badge: '', badgeText: '', stock: 18, description: 'بند استیل طلایی، صفحه آبی سان‌برست، طراحی ظریف، قطر ۳۰mm' },
+      { id: 'PRD-004', name: 'ست زوج Seiko طلایی — مردانه و زنانه صفحه آبی', category: 'ست ساعت', price: 2000000, image: 'images/product-004.jpg', badge: 'special', badgeText: 'پیشنهاد ویژه', stock: 8, description: 'هر دو ساعت با بند استیل طلایی، صفحه آبی، جعبه کادویی هدیه' },
+      { id: 'PRD-005', name: 'ساعت مردانه Seiko نقره‌ای — صفحه سفید مینیمال', category: 'ساعت مردانه', price: 2000000, image: 'images/product-005.jpg', badge: '', badgeText: '', stock: 10, description: 'بند استیل نقره‌ای براق، صفحه سفید خالص، طراحی مینیمال، قطر ۴۰mm' },
+      { id: 'PRD-006', name: 'ساعت مردانه Seiko — صفحه مشکی بند چرم اصل', category: 'ساعت مردانه', price: 2000000, image: 'images/product-006.jpg', badge: 'special', badgeText: 'پرطرفدار', stock: 14, description: 'بند چرم طبیعی مشکی، صفحه مشکی کلاسیک، دوخت دستی، قطر ۴۰mm' },
+      { id: 'PRD-007', name: 'ساعت زنانه Seiko — صفحه سفید بند چرم قهوه‌ای', category: 'ساعت زنانه', price: 2000000, image: 'images/product-007.jpg', badge: 'new', badgeText: 'جدید', stock: 11, description: 'بند چرم طبیعی قهوه‌ای، صفحه سفید مینیمال، قطر ۳۰mm' },
+      { id: 'PRD-008', name: 'ساعت مردانه Seiko کرونوگراف — صفحه مشکی', category: 'ساعت مردانه', price: 2000000, image: 'images/product-008.jpg', badge: 'special', badgeText: 'خاص', stock: 7, description: 'سه شمارنده فرعی، بند استیل نقره‌ای، قطر ۴۲mm، مناسب استایل اسپرت' },
+      { id: 'PRD-009', name: 'ساعت زنانه Seiko — طرح گل طلایی', category: 'ساعت زنانه', price: 2000000, image: 'images/product-009.jpg', badge: '', badgeText: '', stock: 9, description: 'بند استیل طلایی، صفحه طرح گل و نگین، قطر ۲۸mm، طراحی هنری' },
+      { id: 'PRD-010', name: 'پک ویژه کادویی — ساعت + جعبه چوبی + گارانتی', category: 'پک کادویی', price: 2000000, image: 'images/product-010.jpg', badge: 'special', badgeText: 'هدیه', stock: 20, description: 'جعبه چوبی لاکچری، کارت گارانتی ۱۲ ماهه، دستمال میکروفایبر، بسته‌بندی شکیل' }
     ];
 
     // ═══════════════════════════════
