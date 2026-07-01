@@ -36,6 +36,9 @@ WORKSPACE_DIR = Path(__file__).resolve().parents[2]
 WEBSITE_IMAGES = WORKSPACE_DIR / "project-jazireh" / "website" / "images"
 DOCS_IMAGES = WORKSPACE_DIR / "docs" / "images"
 
+# آیدی کانال تلگرام (برای پست خودکار)
+CHANNEL_ID = os.getenv("CHANNEL_ID", "@jazire1400")
+
 # آیدی عددی ادمین (برای دریافت نوتیفیکیشن سفارش‌ها)
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID", "123456789")
 
@@ -703,6 +706,26 @@ async def photo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = subprocess.run(["git", "push"], capture_output=True, timeout=60, text=True)
         
         if result.returncode == 0:
+            # ارسال به کانال تلگرام
+            channel_caption = (
+                f"🛍️ *{product_name}*\n\n"
+                f"💰 قیمت: *{product['price']:,} تومان*\n"
+                f"🔩 بند استیل نقره‌ای باکیفیت\n"
+                f"🎁 جعبه اصلی + گارانتی باتری ۱۲ ماهه\n\n"
+                f"🆔 کد: `{caption}`\n"
+                f"🛒 سفارش: @JazirehWatchBot\n"
+                f"🌐 سایت: https://redmi14jazire-design.github.io/jazireh-shop"
+            )
+            try:
+                await context.bot.send_photo(
+                    chat_id=CHANNEL_ID,
+                    photo=photo_bytes,
+                    caption=channel_caption,
+                    parse_mode="Markdown"
+                )
+            except Exception as e:
+                logging.warning(f"Channel post failed: {e}")
+            
             await update.message.reply_text(
                 f"✅ *عکس با موفقیت آپلود شد!*\n\n"
                 f"🛍️ {product_name}\n"
