@@ -24,6 +24,10 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 # توکن ربات تلگرام (از BotFather بگیر)
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8702077052:AAHX9uqfkYViH3OdhsdDlN1QFpuqTO1lq84")
 
+# پروکسی برای ایران (در صورت نیاز)
+# مثال: http://127.0.0.1:10808 یا socks5://127.0.0.1:10808
+PROXY_URL = os.getenv("PROXY_URL", "")
+
 # آیدی عددی ادمین (برای دریافت نوتیفیکیشن سفارش‌ها)
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID", "123456789")
 
@@ -618,8 +622,12 @@ def main():
         print("از @BotFather توی تلگرام ربات بساز و توکن رو اینجا بذار.")
         return
 
-    # ساخت اپلیکیشن
-    app = Application.builder().token(BOT_TOKEN).build()
+    # ساخت اپلیکیشن با پشتیبانی از پروکسی
+    builder = Application.builder().token(BOT_TOKEN)
+    if PROXY_URL:
+        print(f"🔌 استفاده از پروکسی: {PROXY_URL}")
+        builder.proxy(PROXY_URL).get_updates_proxy(PROXY_URL)
+    app = builder.build()
 
     # ثبت هندلرها
     app.add_handler(CommandHandler("start", start))
