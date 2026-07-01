@@ -13,6 +13,9 @@ pip install python-telegram-bot gspread oauth2client
 import os
 import json
 import logging
+import subprocess
+import httpx
+from pathlib import Path
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
@@ -26,7 +29,10 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "8702077052:AAHX9uqfkYViH3OdhsdDlN1QFpuqTO1lq
 
 # پروکسی برای ایران (در صورت نیاز)
 # مثال: http://127.0.0.1:10808 یا socks5://127.0.0.1:10808
-PROXY_URL = os.getenv("PROXY_URL", "")
+# مسیر workspace (برای آپلود عکس و push به گیت)
+WORKSPACE_DIR = Path(__file__).resolve().parents[2]
+WEBSITE_IMAGES = WORKSPACE_DIR / "project-jazireh" / "website" / "images"
+DOCS_IMAGES = WORKSPACE_DIR / "docs" / "images"
 
 # آیدی عددی ادمین (برای دریافت نوتیفیکیشن سفارش‌ها)
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID", "123456789")
@@ -154,6 +160,7 @@ def build_main_menu():
             InlineKeyboardButton("ℹ️ درباره ما", callback_data="about"),
             InlineKeyboardButton("📞 تماس با ما", callback_data="contact"),
         ],
+        [InlineKeyboardButton("📸 آپلود عکس محصول", callback_data="upload_info")],
         [InlineKeyboardButton("❓ راهنما", callback_data="help")],
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -385,6 +392,24 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]])
         )
 
+    # ── راهنمای آپلود ──
+    elif data == "upload_info":
+        products_list = "\n".join([f"`{p['code']}` — {p['name']}" for p in products])
+        await query.edit_message_text(
+            f"📸 *آپلود عکس محصول*\n\n"
+            f"برای آپلود عکس، مراحل زیر رو انجام بده:\n\n"
+            f"۱. عکس رو با دوربین یا گالری انتخاب کن\n"
+            f"۲. توی Caption عکس، *کد محصول* رو بنویس\n"
+            f"۳. دکمه ارسال رو بزن\n\n"
+            f"🎯 *لیست کد محصولات:*\n{products_list}\n\n"
+            f"⚠️ عکس باید مربع (۱:۱) باشه و پس‌زمینه حذف شده باشه.\n"
+            f"📏 سایز پیشنهادی: ۸۰۰×۸۰۰ پیکسل",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("🔙 بازگشت", callback_data="main_menu")
+            ]])
+        )
+
     # ── راهنما ──
     elif data == "help":
         await query.edit_message_text(
@@ -608,6 +633,98 @@ async def confirm_order_handler(update: Update, context: ContextTypes.DEFAULT_TY
 
 
 # ═══════════════════════════════════════
+#  هندلر آپلود عکس
+# ═══════════════════════════════════════
+
+async def upload_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """دستور /upload"""
+    products = get_products_from_sheet()
+    products_list = "\n".join([f"`{p['code']}` — {p['name']}" for p in products])
+    await update.message.reply_text(
+        f"📸 *آپلود عکس محصول*\n\n"
+        f"حالا عکس رو بفرس و توی کپشن، *کد محصول* رو بنویس.\n\n"
+        f"🎯 کد محصولات:\n{products_list}",
+        parse_mode="Markdown"
+    )
+
+
+async def photo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """دریافت عکس و آپلود در سایت"""
+    caption = update.message.caption or ""
+    caption = caption.strip().upper()
+    
+    # اعتبارسنجی کد محصول
+    products = get_products_from_sheet()
+    valid_codes = [p["code"] for p in products]
+    
+    if caption not in valid_codes:
+        codes_list = ", ".join(valid_codes)
+        await update.message.reply_text(
+            f"⚠️ کد محصول نامعتبره!\n\n"
+            f"کد وارد شده: `{caption or 'خالی'}`\n"
+            f"کدهای معتبر: {codes_list}\n\n"
+            f"لطفاً دوباره عکس رو با کد محصول درست بفرس.",
+            parse_mode="Markdown"
+        )
+        return
+    
+    product = get_product(caption)
+    product_name = product["name"] if product else caption
+    
+    await update.message.reply_text(f"⏳ در حال آپلود عکس {product_name}...")
+    
+    try:
+        # دانلود عکس از تلگرام
+        photo_file = await update.message.photo[-1].get_file()
+        photo_bytes = await photo_file.download_as_bytearray()
+        
+        # تعیین نام فایل بر اساس کد محصول
+        file_num = caption.replace("PRD-", "")
+        filename = f"product-{file_num}.jpg"
+        
+        # ایجاد پوشه‌ها در صورت نیاز
+        WEBSITE_IMAGES.mkdir(parents=True, exist_ok=True)
+        DOCS_IMAGES.mkdir(parents=True, exist_ok=True)
+        
+        # ذخیره در هر دو مسیر
+        web_path = WEBSITE_IMAGES / filename
+        docs_path = DOCS_IMAGES / filename
+        
+        web_path.write_bytes(photo_bytes)
+        docs_path.write_bytes(photo_bytes)
+        
+        # Push به گیت‌هاب
+        os.chdir(WORKSPACE_DIR)
+        subprocess.run(["git", "add", str(web_path.relative_to(WORKSPACE_DIR)), str(docs_path.relative_to(WORKSPACE_DIR))], capture_output=True, timeout=30)
+        subprocess.run(["git", "commit", "-m", f"📸 آپلود عکس {caption} — {product_name}"], capture_output=True, timeout=30)
+        result = subprocess.run(["git", "push"], capture_output=True, timeout=60, text=True)
+        
+        if result.returncode == 0:
+            await update.message.reply_text(
+                f"✅ *عکس با موفقیت آپلود شد!*\n\n"
+                f"🛍️ {product_name}\n"
+                f"🆔 {caption}\n"
+                f"📁 {filename}\n\n"
+                f"🔗 تا ۳۰ ثانیه دیگه توی سایت آپدیت میشه\n"
+                f"<https://redmi14jazire-design.github.io/jazireh-shop/>",
+                parse_mode="Markdown"
+            )
+        else:
+            await update.message.reply_text(
+                f"✅ *عکس ذخیره شد* اما push به گیت‌هاب خطا داد.\n\n"
+                f"خطا: {result.stderr[:200]}\n\n"
+                f"عکس لوکال ذخیره شده — دفعه بعد push میشه.",
+                parse_mode="Markdown"
+            )
+    
+    except Exception as e:
+        logging.error(f"Photo upload error: {e}")
+        await update.message.reply_text(
+            f"❌ خطا در آپلود عکس:\n{str(e)[:300]}\n\nلطفاً دوباره تلاش کن."
+        )
+
+
+# ═══════════════════════════════════════
 #  اجرای ربات
 # ═══════════════════════════════════════
 
@@ -631,8 +748,10 @@ def main():
 
     # ثبت هندلرها
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("upload", upload_command))
     app.add_handler(CallbackQueryHandler(button_handler, pattern="^(?!confirm_order).*"))
     app.add_handler(CallbackQueryHandler(confirm_order_handler, pattern="^confirm_order$"))
+    app.add_handler(MessageHandler(filters.PHOTO, photo_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
     # شروع
