@@ -1,4 +1,3 @@
 [build]
-  base = "project-jazireh/website"
   publish = "project-jazireh/website"
   command = ""
