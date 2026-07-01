@@ -1,0 +1,6 @@
+python-jazireh/
+__pycache__/
+*.pyc
+.env
+credentials.json
+bot.log
